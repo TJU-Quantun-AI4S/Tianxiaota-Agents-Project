@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>agent-web</title>
+    <script type="module" crossorigin src="./assets/index-LUPAI2zx.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DX3kZpGl.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      (function() {
+        const PREFIX = 'tianxiaota.metrics.';
+        const KEYS = {
+          visitCount: PREFIX + 'visitCount',
+          agentUseCount: PREFIX + 'agentUseCount',
+          agentUseByName: PREFIX + 'agentUseByName',
+          logs: PREFIX + 'logs'
+        };
+        const MAX_LOGS = 200;
+        const safeJSONParse = (value, fallback) => {
+          try {
+            if (value == null || value === '') return fallback;
+            return JSON.parse(value);
+          } catch {
+            return fallback;
+          }
+        };
+        const safeGetItem = (key) => {
+          try {
+            return localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        };
+        const safeSetItem = (key, value) => {
+          try {
+            localStorage.setItem(key, value);
+            return true;
+          } catch {
+            return false;
+          }
+        };
+        const safeGetNumber = (key) => {
+          const raw = safeGetItem(key);
+          const n = raw == null ? 0 : Number(raw);
+          return Number.isFinite(n) ? n : 0;
+        };
+        const safeSetNumber = (key, value) => safeSetItem(key, String(value));
+        const nowISO = () => new Date().toISOString();
+        const loadAgentMap = () => safeJSONParse(safeGetItem(KEYS.agentUseByName), {});
+        const saveAgentMap = (map) => safeSetItem(KEYS.agentUseByName, JSON.stringify(map));
+        const loadLogs = () => safeJSONParse(safeGetItem(KEYS.logs), []);
+        const saveLogs = (logs) => safeSetItem(KEYS.logs, JSON.stringify(logs.slice(-MAX_LOGS)));
+        const pushLog = (entry) => {
+          const logs = loadLogs();
+          logs.push(entry);
+          saveLogs(logs);
+        };
+
+        const renderBadge = () => {
+          const id = 'tianxiaota-metrics-badge';
+          let el = document.getElementById(id);
+          if (!el) {
+            el = document.createElement('div');
+            el.id = id;
+            Object.assign(el.style, {
+              position: 'fixed',
+              right: '16px',
+              bottom: '16px',
+              zIndex: '2147483647',
+              background: 'rgba(255,255,255,0.95)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              borderRadius: '12px',
+              padding: '10px 12px',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+              fontSize: '12px',
+              color: '#1f1f1f',
+              lineHeight: '1.4',
+              userSelect: 'none'
+            });
+            document.body.appendChild(el);
+          }
+
+          const visits = safeGetNumber(KEYS.visitCount);
+          const uses = safeGetNumber(KEYS.agentUseCount);
+          el.innerHTML = `<div style="font-weight:600; margin-bottom:2px; color:#003366;">天小塔统计</div>
+<div>访问次数：<span style="font-weight:600;">${visits}</span></div>
+<div>智能体使用次数：<span style="font-weight:600;">${uses}</span></div>`;
+        };
+
+        const recordVisit = (source) => {
+          const next = safeGetNumber(KEYS.visitCount) + 1;
+          safeSetNumber(KEYS.visitCount, next);
+          pushLog({ type: 'visit', ts: nowISO(), path: location.pathname + location.search + location.hash, source: source || 'page' });
+          renderBadge();
+          return next;
+        };
+
+        const recordAgentUse = (agentName, target) => {
+          const next = safeGetNumber(KEYS.agentUseCount) + 1;
+          safeSetNumber(KEYS.agentUseCount, next);
+          const map = loadAgentMap();
+          const name = agentName || 'unknown';
+          map[name] = (Number(map[name]) || 0) + 1;
+          saveAgentMap(map);
+          pushLog({ type: 'agent_use', ts: nowISO(), agent: name, target: target || null, path: location.pathname + location.search + location.hash });
+          renderBadge();
+          return next;
+        };
+
+        window.__tianxiaotaMetrics = {
+          recordVisit,
+          recordAgentUse,
+          renderBadge,
+          getState: () => ({
+            visitCount: safeGetNumber(KEYS.visitCount),
+            agentUseCount: safeGetNumber(KEYS.agentUseCount),
+            agentUseByName: loadAgentMap(),
+            logs: loadLogs()
+          })
+        };
+
+        recordVisit('main');
+        renderBadge();
+        window.addEventListener('storage', function(e) {
+          if (e && e.key && String(e.key).startsWith(PREFIX)) renderBadge();
+        });
+      })();
+
+      (function() {
+        const checkExist = setInterval(function() {
+           const logoImg = document.querySelector('img[alt="Tianjin University Logo"]');
+           if (logoImg) {
+              clearInterval(checkExist);
+              
+              // Logo img -> div/a (wrapper) -> div (header container)
+              // The wrapper has width 180px. The container has gap 12px.
+              const logoWrapper = logoImg.parentElement;
+              const headerContainer = logoWrapper.parentElement;
+              
+              if (headerContainer) {
+                  // Create button container
+                  const btnContainer = document.createElement('div');
+                  btnContainer.style.display = 'flex';
+                  btnContainer.style.gap = '10px';
+                  btnContainer.style.marginLeft = '12px';
+                  btnContainer.style.alignItems = 'center';
+                  
+                  // Sub-Logo "天小塔"
+                  const subLogo = document.createElement('div');
+                  Object.assign(subLogo.style, {
+                    color: '#003366',
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: '"Microsoft YaHei", sans-serif',
+                    letterSpacing: '2px',
+                    padding: '4px 8px',
+                    borderLeft: '2px solid #ccc',
+                    marginLeft: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  });
+
+                  const taLogoImg = document.createElement('img');
+                  taLogoImg.src = './Ta-Logo.png';
+                  taLogoImg.alt = 'Ta Logo';
+                  Object.assign(taLogoImg.style, {
+                    height: '22px',
+                    width: '22px',
+                    objectFit: 'contain',
+                    display: 'block'
+                  });
+
+                  const subLogoText = document.createElement('span');
+                  subLogoText.innerText = '天小塔';
+
+                  subLogo.appendChild(taLogoImg);
+                  subLogo.appendChild(subLogoText);
+
+                  // Button 2
+                  const btn2Link = document.createElement('a');
+                  btn2Link.href = 'http://tianxiaota.vip.cpolar.cn';
+                  btn2Link.target = '_blank';
+                  btn2Link.style.textDecoration = 'none';
+                  
+                  const btn2 = document.createElement('button');
+                  btn2.innerText = '智能体搭建';
+                  Object.assign(btn2.style, {
+                    padding: '6px 12px',
+                    backgroundColor: '#008CBA',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap'
+                  });
+                  
+                  btn2Link.appendChild(btn2);
+                  
+                  btnContainer.appendChild(subLogo);
+                  btnContainer.appendChild(btn2Link);
+                  
+                  // Append to the header container, right after the logo wrapper
+                  // insertBefore is safer if there are other elements (like the menu)
+                  if (logoWrapper.nextSibling) {
+                    headerContainer.insertBefore(btnContainer, logoWrapper.nextSibling);
+                  } else {
+                    headerContainer.appendChild(btnContainer);
+                  }
+              }
+           }
+        }, 100);
+      })();
+      
+      (function() {
+        const checkCard = setInterval(function() {
+           // Hide Title and "AI for Learning" Section
+           const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+           let node;
+           while(node = walker.nextNode()) {
+               if (node.textContent.includes('三大核心智能体集群')) {
+                   const parent = node.parentElement;
+                   // Hide title container
+                   if (parent) parent.style.display = 'none';
+               }
+               if (node.textContent === '学科大模型入口') {
+                     // Find the section container
+                     let titleNode = node.parentElement;
+                     // We want to keep the title visible, but hide the grid below it and show chat box.
+                     
+                     // Create Chat Box if not exists
+                     if (!document.getElementById('tianxiaota-chat-box')) {
+                         const chatBox = document.createElement('div');
+                         chatBox.id = 'tianxiaota-chat-box';
+                         chatBox.style.width = '100%';
+                         chatBox.style.maxWidth = '800px';
+                         chatBox.style.margin = '20px auto';
+                         chatBox.style.padding = '15px 20px';
+                         chatBox.style.background = '#fff';
+                         chatBox.style.borderRadius = '30px';
+                         chatBox.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                         chatBox.style.display = 'flex';
+                         chatBox.style.alignItems = 'center';
+                         chatBox.style.cursor = 'pointer';
+                         chatBox.style.border = '1px solid #e0e0e0';
+                         chatBox.style.transition = 'all 0.3s';
+                         
+                         chatBox.innerHTML = `
+                             <div style="display:flex; flex-direction:column; width:100%;">
+                                 <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; align-items: center;">
+                                     <span style="background: #e6f7ff; color: #1890ff; padding: 4px 8px; border-radius: 4px; font-size: 14px; margin-right: 8px;">入口</span>
+                                     学科大模型入口
+                                 </div>
+                                 <div style="display: flex; align-items: center; background: #f5f5f5; padding: 10px 15px; border-radius: 20px;">
+                                     <div style="margin-right: 15px; color: #1890ff; font-size: 20px; display: flex; align-items: center;">
+                                         <svg viewBox="0 0 1024 1024" width="24" height="24" fill="currentColor">
+                                           <path d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zm-40 728H184V184h656v656zM304 480a80 80 0 1 1 160 0 80 80 0 0 1-160 0zm0 160h160v-80H304v80zm240-240h176v400H544V400zm-240 0h160v-80H304v80z"/> 
+                                           <!-- Replacing with a chat icon -->
+                                           <path d="M512 64C264.6 64 64 264.6 64 512c0 247.4 200.6 448 448 448 247.4 0 448-200.6 448-448C960 264.6 759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372 0-205.4 166.6-372 372-372 205.4 0 372 166.6 372 372 0 205.4-166.6 372-372 372z" fill="#fff"/>
+                                           <path d="M512 140c-205.4 0-372 166.6-372 372 0 205.4 166.6 372 372 372 205.4 0 372-166.6 372-372 0-205.4-166.6-372-372-372zm0 680c-170.1 0-308-137.9-308-308s137.9-308 308-308 308 137.9 308 308-137.9 308-308 308z" opacity="0"/>
+                                           <path d="M724 330H300c-4.4 0-8 3.6-8 8v348c0 4.4 3.6 8 8 8h424c4.4 0 8-3.6 8-8V338c0-4.4-3.6-8-8-8zm-56 284H356V394h312v220z"/>
+                                         </svg>
+                                     </div>
+                                     <div style="flex: 1; color: #999; font-size: 16px;">
+                                         与天小塔对话，探索材料科学新世界...
+                                     </div>
+                                     <div style="background: #1890ff; color: #fff; padding: 6px 12px; border-radius: 15px; font-size: 14px;">
+                                         发送
+                                     </div>
+                                 </div>
+                                 <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                                     <span style="background: #f0f2f5; color: #666; padding: 4px 10px; border-radius: 12px; font-size: 12px;">你好，我想了解钙钛矿材料</span>
+                                     <span style="background: #f0f2f5; color: #666; padding: 4px 10px; border-radius: 12px; font-size: 12px;">如何设计一个新的实验方案？</span>
+                                     <span style="background: #f0f2f5; color: #666; padding: 4px 10px; border-radius: 12px; font-size: 12px;">帮我分析这篇文献的创新点</span>
+                                 </div>
+                             </div>
+                         `;
+                         
+                         chatBox.onclick = function() {
+                              if (window.__tianxiaotaMetrics) window.__tianxiaotaMetrics.recordAgentUse('学科大模型入口', 'http://tjumllm.vip.cpolar.cn');
+                             window.open('http://tjumllm.vip.cpolar.cn', '_blank');
+                         };
+                         
+                         chatBox.onmouseover = function() {
+                             this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.12)';
+                             this.style.transform = 'translateY(-2px)';
+                         };
+                         chatBox.onmouseout = function() {
+                             this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                             this.style.transform = 'translateY(0)';
+                         };
+
+                         // We want to HIDE the original title container (since we render our own title in chatbox)
+                         // And hide the grid.
+                         
+                         // Find the title container. node is text node. titleNode is likely h4 or span or div.
+                         // In the JS: Eb=({title:e,subtitle:t})=>T.jsxs("div", ...
+                         // So the container is the parent of the element containing the text.
+                         // Let's go up until we find the container with style margin: "0 auto 12px auto" (from JS source)
+                         // Or just hide the direct parent and its siblings?
+                         
+                         // Actually, the JS structure is:
+                         // T.jsxs("div",{style:{marginBottom:"40px"},children:[
+                         //    T.jsx(Eb,{title:"学科大模型入口",subtitle:""}),
+                         //    T.jsxs("div",{style:{display:"grid"...},children:[...]})
+                         // ]})
+                         
+                         // So we have a wrapper div. Inside it is Eb (title) and div (grid).
+                         // If we find "学科大模型入口", we are inside Eb.
+                         // We want to clear the wrapper div and append our chatBox.
+                         
+                         let wrapper = titleNode;
+                         for(let i=0; i<5; i++) {
+                             if(wrapper && wrapper.parentElement && wrapper.parentElement.children.length === 2) {
+                                 // Check if next sibling is the grid
+                                 if (wrapper.nextElementSibling && wrapper.nextElementSibling.style.display === 'grid') {
+                                     wrapper = wrapper.parentElement;
+                                     break;
+                                 }
+                             }
+                             wrapper = wrapper.parentElement;
+                         }
+                         
+                         if (wrapper && wrapper.children.length >= 2) {
+                             wrapper.innerHTML = '';
+                             wrapper.appendChild(chatBox);
+                         } else {
+                             // Fallback: just insert after node's parent and hope we can hide the rest
+                             if (node.parentElement && node.parentElement.parentElement) {
+                                 node.parentElement.parentElement.innerHTML = '';
+                                 node.parentElement.parentElement.appendChild(chatBox);
+                             }
+                         }
+                     }
+                }
+               
+               // Hide specific cards
+               if (['知识精准解析', '虚拟实验教学', '个性学涯规划', '学业诊断提升'].some(k => node.textContent === k)) {
+                   // Find the card container and hide it
+                   const parent = node.parentElement;
+                   let card = parent.closest('.ant-pro-card') || parent.closest('.ant-card') || parent.closest('div[class*="card"]');
+                   if (!card) {
+                       // fallback
+                        let p = parent;
+                        for(let i=0; i<5; i++) {
+                            if (p.tagName === 'DIV' && (p.style.cursor === 'pointer' || p.onclick)) {
+                                card = p;
+                                break;
+                            }
+                            p = p.parentElement;
+                            if (!p) break;
+                        }
+                   }
+                   if (!card) card = parent.parentElement.parentElement;
+                   
+                   if (card) {
+                       card.style.display = 'none';
+                   }
+               }
+
+               if (node.textContent === '科研文档生成') {
+                   const parent = node.parentElement;
+                   let card = parent.closest('.ant-pro-card') || parent.closest('.ant-card') || parent.closest('div[class*="card"]');
+                   
+                   if (!card) {
+                       let p = parent;
+                       for(let i=0; i<5; i++) {
+                           if (p.tagName === 'DIV' && (p.style.cursor === 'pointer' || p.onclick)) {
+                               card = p;
+                               break;
+                           }
+                           p = p.parentElement;
+                           if (!p) break;
+                       }
+                   }
+                   
+                   if (!card) card = parent.parentElement.parentElement;
+                   
+                   if (card) {
+                       card.style.cursor = 'pointer';
+                       card.onclick = function(e) {
+                           e.preventDefault();
+                           e.stopPropagation();
+                           if (window.__tianxiaotaMetrics) window.__tianxiaotaMetrics.recordAgentUse('科研文档生成', './research_center.html');
+                           window.location.href = './research_center.html';
+                       };
+                       card.title = "点击进入科研写作智能体中心";
+                       card.onmouseover = function() {
+                           this.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                           this.style.transition = "all 0.3s";
+                       };
+                       card.onmouseout = function() {
+                           this.style.boxShadow = "";
+                       };
+                   }
+               } else if (node.textContent === '学术前沿调研') {
+                   const parent = node.parentElement;
+                   let card = parent.closest('.ant-pro-card') || parent.closest('.ant-card') || parent.closest('div[class*="card"]');
+                   
+                   if (!card) {
+                       let p = parent;
+                       for(let i=0; i<5; i++) {
+                           if (p.tagName === 'DIV' && (p.style.cursor === 'pointer' || p.onclick)) {
+                               card = p;
+                               break;
+                           }
+                           p = p.parentElement;
+                           if (!p) break;
+                       }
+                   }
+                   
+                   if (!card) card = parent.parentElement.parentElement;
+                   
+                   if (card) {
+                       card.style.cursor = 'pointer';
+                       card.onclick = function(e) {
+                           e.preventDefault();
+                           e.stopPropagation();
+                           if (window.__tianxiaotaMetrics) window.__tianxiaotaMetrics.recordAgentUse('学术前沿调研', './academic_center.html');
+                           window.location.href = './academic_center.html';
+                       };
+                       card.title = "点击进入学术文献智能体中心";
+                       card.onmouseover = function() {
+                           this.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                           this.style.transition = "all 0.3s";
+                       };
+                       card.onmouseout = function() {
+                           this.style.boxShadow = "";
+                       };
+                   }
+               } else if (node.textContent === '实验计算助手') {
+                   const parent = node.parentElement;
+                   let card = parent.closest('.ant-pro-card') || parent.closest('.ant-card') || parent.closest('div[class*="card"]');
+                   
+                   if (!card) {
+                       let p = parent;
+                       for(let i=0; i<5; i++) {
+                           if (p.tagName === 'DIV' && (p.style.cursor === 'pointer' || p.onclick)) {
+                               card = p;
+                               break;
+                           }
+                           p = p.parentElement;
+                           if (!p) break;
+                       }
+                   }
+                   
+                   if (!card) card = parent.parentElement.parentElement;
+                   
+                   if (card) {
+                       card.style.cursor = 'pointer';
+                       card.onclick = function(e) {
+                           e.preventDefault();
+                           e.stopPropagation();
+                           if (window.__tianxiaotaMetrics) window.__tianxiaotaMetrics.recordAgentUse('实验计算助手', 'http://116.196.79.83:8000');
+                           window.open('http://116.196.79.83:8000', '_blank');
+                       };
+                       card.title = "点击进入实验计算助手";
+                       card.onmouseover = function() {
+                           this.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                           this.style.transition = "all 0.3s";
+                       };
+                       card.onmouseout = function() {
+                           this.style.boxShadow = "";
+                       };
+                   }
+               }
+           }
+        }, 500);
+      })();
+    </script>
+  </body>
+</html>

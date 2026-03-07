@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI科研绘图助手</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #f2f5f9;
+        color: #1a1a1a;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Top Bar */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 16px;
+        background: #fff;
+        border-bottom: 1px solid #d4dbe8;
+        height: 60px;
+        box-sizing: border-box;
+    }
+    
+    .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background-color: transparent;
+        padding: 5px 0;
+    }
+
+    .logo-img {
+        height: 40px;
+        padding: 2px;
+        /* filter: invert(1); */
+    }
+
+    .header-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #003366;
+    }
+
+    .header-btn {
+        background: #fff;
+        border: 1px solid #dcdcdc;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #333;
+    }
+
+    /* Main Layout */
+    .container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 16px;
+        padding: 16px;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Cards */
+    .card {
+        background: #fff;
+        border: 1px solid #dde3ee;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-size: 15px;
+    }
+
+    .card-header {
+        padding: 12px 16px;
+        font-weight: 600;
+        font-size: 16px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #f8f9fa;
+        color: #003366;
+    }
+
+    .card-body {
+        padding: 16px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    /* Sidebar Navigation */
+    .nav-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #555;
+        border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+        background: #f0f7ff;
+        color: #2878ff;
+    }
+
+    .nav-item.active {
+        background: #eef5ff;
+        color: #2878ff;
+        border-color: #a9c7e6;
+        font-weight: 600;
+    }
+
+    .nav-icon {
+        width: 24px;
+        text-align: center;
+    }
+
+    /* Chat Area */
+    .chat-area {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #dde3ee;
+        overflow: hidden;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: #fafbfc;
+    }
+
+    .message {
+        display: flex;
+        gap: 15px;
+        max-width: 85%;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .message.ai {
+        align-self: flex-start;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 16px;
+        color: white;
+    }
+
+    .user .avatar { background: #2878ff; }
+    .ai .avatar { background: #7c3aed; }
+
+    .msg-content {
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 15px;
+        line-height: 1.6;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        position: relative;
+    }
+
+    .user .msg-content {
+        background: #eef5ff;
+        color: #1a1a1a;
+        border-top-right-radius: 2px;
+    }
+
+    .ai .msg-content {
+        background: #fff;
+        border: 1px solid #eee;
+        color: #333;
+        border-top-left-radius: 2px;
+    }
+
+    /* Thought Process */
+    .thought-box {
+        margin-top: 10px;
+        background: #f8f9fa;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        font-size: 13px;
+        overflow: hidden;
+    }
+
+    .thought-header {
+        padding: 8px 12px;
+        background: #f1f3f5;
+        color: #666;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .thought-body {
+        padding: 10px 12px;
+        color: #555;
+        font-family: monospace;
+        white-space: pre-wrap;
+    }
+
+    /* Image Result */
+    .image-result {
+        margin-top: 12px;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #fff;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        height: 200px;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #888;
+        font-size: 14px;
+    }
+    
+    .generated-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Input Area */
+    .input-container {
+        padding: 20px;
+        background: #fff;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 12px;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #dcdcdc;
+        border-radius: 24px;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+        border-color: #2878ff;
+    }
+
+    .send-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #2878ff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: background 0.2s;
+    }
+
+    .send-btn:hover {
+        background: #1e64d4;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Typing Indicator */
+    .typing-indicator span {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background-color: #ccc;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out both;
+        margin: 0 2px;
+    }
+    
+    .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+    .modal-content {
+        background-color: #fff;
+        border-radius: 8px;
+        width: 450px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        animation: slideDown 0.3s ease;
+    }
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-body {
+        padding: 20px;
+    }
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #333; }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: #2878ff; outline: none; }
+    .btn-save {
+        background: #2878ff; color: white; border: none; padding: 8px 16px;
+        border-radius: 4px; cursor: pointer; font-weight: 500;
+    }
+    .btn-save:hover { background: #1e64d4; }
+    .btn-cancel {
+        background: #f1f3f5; color: #333; border: none; padding: 8px 16px;
+        border-radius: 4px; cursor: pointer;
+    }
+    .btn-cancel:hover { background: #e1e3e5; }
+    .close-btn { font-size: 24px; cursor: pointer; color: #999; }
+    .close-btn:hover { color: #333; }
+    .help-text { font-size: 12px; color: #888; margin-top: 5px; }
+    
+    @keyframes slideDown { 
+        from { transform: translateY(-20px); opacity: 0; } 
+        to { transform: translateY(0); opacity: 1; } 
+    }
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <img src="tju_white_padding.png" class="logo-img" alt="TJU Logo">
+        <div class="header-title">AI科研绘图助手</div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button class="header-btn"><i class="fas fa-folder-open"></i> 作品库</button>
+        <button class="header-btn" onclick="toggleSettings()"><i class="fas fa-cog"></i> 设置</button>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Left Sidebar: Functions -->
+    <aside class="card">
+        <div class="card-header">绘图功能导航</div>
+        <div class="card-body">
+            <div class="nav-list">
+                <div class="nav-item active" onclick="switchDemo(0)">
+                    <div class="nav-icon"><i class="fas fa-flask"></i></div>
+                    <div>材料合成/制备流程图</div>
+                </div>
+                <div class="nav-item" onclick="switchDemo(1)">
+                    <div class="nav-icon"><i class="fas fa-microscope"></i></div>
+                    <div>微观结构表征可视化</div>
+                </div>
+                <div class="nav-item" onclick="switchDemo(2)">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div>数据处理与分析流程</div>
+                </div>
+                <div class="nav-item" onclick="switchDemo(3)">
+                    <div class="nav-icon"><i class="fas fa-layer-group"></i></div>
+                    <div>多尺度性能模拟结果</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; font-size: 13px; color: #666;">
+                <i class="fas fa-info-circle"></i> <strong>提示：</strong><br>
+                点击上方功能项，右侧将自动演示对应的“自然语言生成图像”全过程。
+            </div>
+        </div>
+    </aside>
+
+    <!-- Right: Chat Interaction -->
+    <main class="chat-area">
+        <div class="chat-messages" id="chatBox">
+            <!-- Initial Welcome Message -->
+            <div class="message ai">
+                <div class="avatar"><i class="fas fa-robot"></i></div>
+                <div class="msg-content">
+                    您好！我是您的AI科研绘图助手。请在左侧选择您需要的绘图类型，我将为您演示如何通过自然语言快速生成高质量科研图像。
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" class="chat-input" id="userInput" placeholder="请输入您的绘图需求描述..." onkeypress="checkEnter(event)">
+            <button class="send-btn" onclick="handleUserSubmit()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </main>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-cog"></i> 设置</h3>
+            <span class="close-btn" onclick="toggleSettings()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>AIMixhub API Key</label>
+                <input type="password" id="apiKeyInput" placeholder="请输入您的 API Key (sk-...)" class="form-control">
+                <div class="help-text">请前往 <a href="https://aihubmix.com" target="_blank" style="color:#2878ff;">AiHubMix</a> 获取 API Key</div>
+            </div>
+            <div class="form-group">
+                <label>思考模型 (Thinking Model)</label>
+                <select id="textModelSelect" class="form-control">
+                    <option value="gpt-4o">GPT-4o (Recommended)</option>
+                    <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>绘图模型 (Drawing Model)</label>
+                <select id="modelSelect" class="form-control">
+                    <option value="dall-e-3">DALL-E 3 (Recommended)</option>
+                    <option value="gpt-image-1.5">GPT Image 1.5</option>
+                    <option value="midjourney">Midjourney</option>
+                    <option value="flux-pro">Flux Pro</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="toggleSettings()">取消</button>
+            <button class="btn-save" onclick="saveSettings()">保存配置</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuration
+    const demos = [
+        {
+            input: "请帮我绘制一张水热法合成二氧化钛纳米管的流程图，包含前驱体混合、水热反应釜加热（180度，24小时）、离心清洗和煅烧四个步骤。",
+            thought: "【任务分析】\n- 目标：绘制水热法合成 TiO2 纳米管的实验流程图\n- 关键步骤：\n  1. 前驱体混合 (Mixing): 烧杯、磁力搅拌\n  2. 水热反应 (Hydrothermal): 不锈钢高压反应釜，标注 180°C, 24h\n  3. 清洗 (Washing): 离心机示意图\n  4. 煅烧 (Calcination): 马弗炉示意图，标注 TiO2 Nanotubes\n- 视觉风格：扁平化矢量风格，科学严谨，蓝灰色调\n- 布局：线性流程，使用箭头连接各步骤",
+            outputType: "process",
+            outputDesc: "TiO2纳米管水热合成流程示意图",
+            imgUrl: "Figure1.png"
+        },
+        {
+            input: "生成一张锂离子电池正极材料（LiCoO2）的微观层状结构示意图，显示锂离子在层间的脱嵌过程。",
+            thought: "【结构建模分析】\n- 主体材料：LiCoO2 (层状结构)\n- 晶体特征：\n  1. CoO6 八面体层 (蓝色多面体)\n  2. Li+ 离子层 (绿色球体，位于层间)\n- 动态过程：锂离子脱嵌 (Deintercalation)\n- 视觉元素：\n  - 绘制 3 层 CoO6 slab\n  - 添加弯曲箭头指示 Li+ 移动路径\n  - 标注 'c-axis' 和 'Li+ diffusion'\n- 渲染风格：3D 原子级渲染，具有光影立体感",
+            outputType: "structure",
+            outputDesc: "LiCoO2层状结构及离子脱嵌示意图",
+            imgUrl: "Figure2.png"
+        },
+        {
+            input: "根据XRD数据绘制一张对比图，展示未掺杂和N掺杂碳材料的(002)峰位偏移情况，并标记出层间距的变化。",
+            thought: "【数据可视化规划】\n- 图表类型：XRD 衍射图谱 (Intensity a.u. vs 2θ)\n- 数据组：\n  1. Pristine Carbon (黑色曲线)\n  2. N-doped Carbon (红色曲线)\n- 关键特征：\n  - (002) 峰位置约在 26°\n  - N掺杂后峰位向小角度偏移 (Shift left)\n- 标注要求：\n  - 绘制局部放大图 (Inset)\n  - 添加双向箭头标记 'Peak Shift'\n  - 标注 'd-spacing increase'\n- 输出规范：学术期刊标准 (Publication Quality)",
+            outputType: "data",
+            outputDesc: "XRD衍射图谱对比分析图",
+            imgUrl: "Figure3.png"
+        },
+        {
+            input: "模拟并可视化纳米流体在微通道内的流速分布热力图，展示近壁面的边界层效应。",
+            thought: "【多物理场模拟可视化】\n- 物理场景：微流控通道内的纳米流体流动\n- 可视化量：流速场 (Velocity Field)\n- 表现形式：热力图/云图 (Contour Plot)\n- 特征捕捉：\n  1. 中心区域流速最高 (呈现红色)\n  2. 近壁面区域流速趋于零 (呈现蓝色，边界层效应)\n  3. 速度剖面呈抛物线分布\n- 视角：通道纵截面视图\n- 色阶：Rainbow (Blue-Green-Red)",
+            outputType: "simulation",
+            outputDesc: "微通道纳米流体流速分布云图",
+            imgUrl: "Figure4.png"
+        }
+    ];
+
+    let isProcessing = false;
+    let apiKey = localStorage.getItem('aimixhub_key') || '';
+    let apiModel = localStorage.getItem('aimixhub_model') || 'dall-e-3';
+    let textModel = localStorage.getItem('aimixhub_text_model') || 'gpt-4o';
+
+    // Initialize Settings
+    document.getElementById('apiKeyInput').value = apiKey;
+    document.getElementById('modelSelect').value = apiModel;
+    document.getElementById('textModelSelect').value = textModel;
+
+    // Settings Functions
+    function toggleSettings() {
+        const modal = document.getElementById('settingsModal');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function saveSettings() {
+        const key = document.getElementById('apiKeyInput').value.trim();
+        const model = document.getElementById('modelSelect').value;
+        const txtModel = document.getElementById('textModelSelect').value;
+        
+        if (key) {
+            apiKey = key;
+            apiModel = model;
+            textModel = txtModel;
+            localStorage.setItem('aimixhub_key', apiKey);
+            localStorage.setItem('aimixhub_model', apiModel);
+            localStorage.setItem('aimixhub_text_model', textModel);
+            alert('配置已保存！');
+            toggleSettings();
+        } else {
+            alert('请输入有效的 API Key');
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('settingsModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // Enter Key Handler
+    function checkEnter(event) {
+        if (event.key === 'Enter') {
+            handleUserSubmit();
+        }
+    }
+
+    // Main Submission Logic
+    async function handleUserSubmit() {
+        if (isProcessing) return;
+        const inputField = document.getElementById('userInput');
+        const userText = inputField.value.trim();
+
+        if (!userText) return;
+
+        isProcessing = true;
+        inputField.value = '';
+        inputField.disabled = true;
+
+        // 1. Display User Message
+        appendMessage('user', userText);
+
+        // 2. Determine Mode (API vs Demo Fallback)
+        let thoughtContent = "";
+        let finalImageUrl = "";
+        let isApiSuccess = false;
+        let outputDesc = "AI生成结果";
+
+        // Check if input matches a demo exactly (for fallback)
+        const matchedDemo = demos.find(d => d.input === userText);
+
+        if (apiKey) {
+            // --- Real AI Mode ---
+            
+            // Step A: Thinking (Text Gen)
+            const thoughtId = appendThinkingPlaceholder();
+            try {
+                thoughtContent = await callAiMixHubTextGen(userText);
+            } catch (e) {
+                console.error("Text Gen Error:", e);
+                thoughtContent = matchedDemo ? matchedDemo.thought : "【系统提示】思考过程生成失败，直接进行绘图...";
+            }
+            updateThinkingContent(thoughtId, thoughtContent);
+
+            // Step B: Image Gen
+            const genMsgId = appendGenerationStatus();
+            try {
+                const resultUrl = await callAiMixHubImageGen(userText);
+                if (resultUrl) {
+                    finalImageUrl = resultUrl;
+                    isApiSuccess = true;
+                } else {
+                    throw new Error("Image generation returned null");
+                }
+            } catch (e) {
+                console.error("Image Gen Error:", e);
+                finalImageUrl = matchedDemo ? matchedDemo.imgUrl : "Figure1.png"; // Fallback
+                outputDesc = "生成失败 (显示示例)";
+            }
+            // Remove generation status
+            const statusDiv = document.getElementById(genMsgId);
+            if (statusDiv) statusDiv.remove();
+
+        } else {
+            // --- Demo / Fallback Mode ---
+            if (matchedDemo) {
+                // Simulate Thinking
+                const thoughtId = appendThinkingPlaceholder();
+                await delay(1500);
+                updateThinkingContent(thoughtId, matchedDemo.thought);
+                
+                // Simulate Image Gen
+                await delay(1000);
+                finalImageUrl = matchedDemo.imgUrl;
+                outputDesc = matchedDemo.outputDesc;
+            } else {
+                appendMessage('ai', '请先在设置中配置 API Key 以使用自定义绘图功能。');
+                isProcessing = false;
+                inputField.disabled = false;
+                inputField.focus();
+                return;
+            }
+        }
+
+        // 3. Display Result
+        appendResult(outputDesc, finalImageUrl, isApiSuccess);
+
+        isProcessing = false;
+        inputField.disabled = false;
+        inputField.focus();
+    }
+
+    // Sidebar Demo Click - Just fills input now
+    async function switchDemo(index) {
+        if (isProcessing) return;
+        
+        // Update active nav
+        document.querySelectorAll('.nav-item').forEach((item, i) => {
+            if (i === index) item.classList.add('active');
+            else item.classList.remove('active');
+        });
+
+        const demo = demos[index];
+        const inputField = document.getElementById('userInput');
+        
+        // Fill input with visual effect
+        inputField.value = '';
+        inputField.placeholder = "正在载入示例...";
+        await delay(300);
+        inputField.value = demo.input;
+        inputField.placeholder = "请输入您的绘图需求描述...";
+        inputField.focus();
+    }
+
+    // API: Text Generation (Thinking)
+    async function callAiMixHubTextGen(prompt) {
+        const systemPrompt = `你是一位专业的科研绘图助手。请分析用户的绘图需求，并输出详细的绘图思路。
+输出格式要求：
+【任务分析】简要分析绘图目标。
+【视觉元素】列出画面中需要的关键物体、结构或数据特征。
+【风格与布局】描述配色、视角、构图方式（如扁平化、3D渲染、流程图等）。
+请保持回答简洁专业，不要输出Markdown代码块，直接输出文本内容。`;
+
+        try {
+            const response = await fetch('https://aihubmix.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: textModel,
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            if (!response.ok) throw new Error('Text API Error');
+            const data = await response.json();
+            return data.choices[0].message.content;
+        } catch (e) {
+            console.error('Text Gen Failed:', e);
+            throw e;
+        }
+    }
+
+    async function callAiMixHubImageGen(prompt) {
+        try {
+            const response = await fetch('https://aihubmix.com/v1/images/generations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: apiModel,
+                    prompt: prompt,
+                    n: 1,
+                    size: "1024x1024"
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                console.error('API Error:', err);
+                return null;
+            }
+
+            const data = await response.json();
+            if (data.data && data.data.length > 0) {
+                return data.data[0].url;
+            }
+            return null;
+
+        } catch (e) {
+            console.error('Network Error:', e);
+            return null;
+        }
+    }
+
+    function appendMessage(role, text) {
+        const chatBox = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${role}`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.innerHTML = role === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+        
+        const content = document.createElement('div');
+        content.className = 'msg-content';
+        content.textContent = text;
+        
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(content);
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendThinkingPlaceholder() {
+        const chatBox = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ai';
+        const id = 'thought-' + Date.now();
+        
+        msgDiv.innerHTML = `
+            <div class="avatar"><i class="fas fa-brain"></i></div>
+            <div class="msg-content" style="width: 100%;">
+                <div class="typing-indicator"><span></span><span></span><span></span></div>
+            </div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        msgDiv.id = id;
+        return id;
+    }
+
+    function updateThinkingContent(msgId, thoughtText) {
+        const msgDiv = document.getElementById(msgId);
+        if (!msgDiv) return;
+        
+        const contentDiv = msgDiv.querySelector('.msg-content');
+        contentDiv.innerHTML = `
+            <div class="thought-box">
+                <div class="thought-header"><i class="fas fa-microchip"></i> AI 思考与规划过程</div>
+                <div class="thought-body">${thoughtText}</div>
+            </div>
+        `;
+        document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+    }
+    
+    function appendGenerationStatus() {
+        const chatBox = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ai';
+        const id = 'gen-status-' + Date.now();
+        msgDiv.id = id;
+        
+        msgDiv.innerHTML = `
+            <div class="avatar"><i class="fas fa-palette"></i></div>
+            <div class="msg-content">
+                <i class="fas fa-spinner fa-spin"></i> 正在调用云端大模型生成图像...
+            </div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return id;
+    }
+
+    function appendResult(desc, imgUrl, isApiSuccess) {
+        const chatBox = document.getElementById('chatBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ai';
+        
+        // Check if image URL is valid (not placeholder if API was attempted)
+        // For now we just show what we have
+        
+        const sourceLabel = isApiSuccess ? '<span style="font-size:10px; background:#e1f5fe; color:#0288d1; padding:2px 6px; border-radius:4px; margin-left:8px;">AI Generated</span>' : '';
+
+        msgDiv.innerHTML = `
+            <div class="avatar"><i class="fas fa-paint-brush"></i></div>
+            <div class="msg-content" style="width: 100%;">
+                <div>✅ <strong>绘图完成：${desc}</strong>${sourceLabel}</div>
+                <div class="image-result">
+                    <img src="${imgUrl}" class="generated-img" alt="${desc}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><i class=\\'fas fa-image\\'></i> 图片加载失败或为占位符</div>'">
+                </div>
+                <div style="margin-top: 8px; font-size: 13px; display: flex; gap: 10px;">
+                    <button style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fas fa-download"></i> 下载 PNG</button>
+                    <button style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fas fa-file-pdf"></i> 下载 PDF (矢量)</button>
+                    <button style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fas fa-edit"></i> 继续修改</button>
+                </div>
+            </div>
+        `;
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+</script>
+
+<script>
+    (function() {
+        const PREFIX = 'tianxiaota.metrics.';
+        const KEYS = {
+            visitCount: PREFIX + 'visitCount',
+            agentUseCount: PREFIX + 'agentUseCount',
+            agentUseByName: PREFIX + 'agentUseByName',
+            logs: PREFIX + 'logs'
+        };
+        const MAX_LOGS = 200;
+        const safeJSONParse = (value, fallback) => {
+            try {
+                if (value == null || value === '') return fallback;
+                return JSON.parse(value);
+            } catch {
+                return fallback;
+            }
+        };
+        const safeGetItem = (key) => {
+            try {
+                return localStorage.getItem(key);
+            } catch {
+                return null;
+            }
+        };
+        const safeSetItem = (key, value) => {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+        const safeGetNumber = (key) => {
+            const raw = safeGetItem(key);
+            const n = raw == null ? 0 : Number(raw);
+            return Number.isFinite(n) ? n : 0;
+        };
+        const safeSetNumber = (key, value) => safeSetItem(key, String(value));
+        const nowISO = () => new Date().toISOString();
+        const loadAgentMap = () => safeJSONParse(safeGetItem(KEYS.agentUseByName), {});
+        const saveAgentMap = (map) => safeSetItem(KEYS.agentUseByName, JSON.stringify(map));
+        const loadLogs = () => safeJSONParse(safeGetItem(KEYS.logs), []);
+        const saveLogs = (logs) => safeSetItem(KEYS.logs, JSON.stringify(logs.slice(-MAX_LOGS)));
+        const pushLog = (entry) => {
+            const logs = loadLogs();
+            logs.push(entry);
+            saveLogs(logs);
+        };
+        const renderBadge = () => {
+            const id = 'tianxiaota-metrics-badge';
+            let el = document.getElementById(id);
+            if (!el) {
+                el = document.createElement('div');
+                el.id = id;
+                Object.assign(el.style, {
+                    position: 'fixed',
+                    right: '16px',
+                    bottom: '16px',
+                    zIndex: '2147483647',
+                    background: 'rgba(255,255,255,0.95)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: '12px',
+                    padding: '10px 12px',
+                    boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+                    fontSize: '12px',
+                    color: '#1f1f1f',
+                    lineHeight: '1.4',
+                    userSelect: 'none'
+                });
+                document.body.appendChild(el);
+            }
+            const visits = safeGetNumber(KEYS.visitCount);
+            const uses = safeGetNumber(KEYS.agentUseCount);
+            el.innerHTML = `<div style="font-weight:600; margin-bottom:2px; color:#003366;">天小塔统计</div>
+<div>访问次数：<span style="font-weight:600;">${visits}</span></div>
+<div>智能体使用次数：<span style="font-weight:600;">${uses}</span></div>`;
+        };
+        const metrics = window.__tianxiaotaMetrics || {
+            recordVisit: (source) => {
+                const next = safeGetNumber(KEYS.visitCount) + 1;
+                safeSetNumber(KEYS.visitCount, next);
+                pushLog({ type: 'visit', ts: nowISO(), path: location.pathname + location.search + location.hash, source: source || 'page' });
+                renderBadge();
+                return next;
+            },
+            recordAgentUse: (agentName, target) => {
+                const next = safeGetNumber(KEYS.agentUseCount) + 1;
+                safeSetNumber(KEYS.agentUseCount, next);
+                const map = loadAgentMap();
+                const name = agentName || 'unknown';
+                map[name] = (Number(map[name]) || 0) + 1;
+                saveAgentMap(map);
+                pushLog({ type: 'agent_use', ts: nowISO(), agent: name, target: target || null, path: location.pathname + location.search + location.hash });
+                renderBadge();
+                return next;
+            },
+            renderBadge
+        };
+        window.__tianxiaotaMetrics = metrics;
+
+        metrics.recordVisit('AI_Draw');
+        metrics.renderBadge();
+        metrics.recordAgentUse('科研绘图智能体', location.pathname);
+    })();
+</script>
+
+</body>
+</html>
