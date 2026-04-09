@@ -438,6 +438,10 @@
                     <div class="nav-icon"><i class="fas fa-layer-group"></i></div>
                     <div>多尺度性能模拟结果</div>
                 </div>
+                <div class="nav-item" onclick="switchDemo(4)">
+                    <div class="nav-icon"><i class="fas fa-project-diagram"></i></div>
+                    <div>量子线路设计与配图</div>
+                </div>
             </div>
             
             <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; font-size: 13px; color: #666;">
@@ -535,6 +539,13 @@
             outputType: "simulation",
             outputDesc: "微通道纳米流体流速分布云图",
             imgUrl: "Figure4.png"
+        },
+        {
+            input: "请帮我绘制一个包含三个量子比特(q0, q1, q2)的量子线路图。要求：q0和q1施加Hadamard门，然后q0和q1之间作用一个CNOT门，接着q1和q2作用一个CNOT门，最后在q2上施加一个Rz旋转门并对q0和q1进行测量。",
+            thought: "【量子线路可视化分析】\n- 目标：绘制多比特量子逻辑门线路图\n- 线路结构与组件：\n  1. 量子寄存器：3个量子比特 (q₀, q₁, q₂)，水平线表示时间演化\n  2. 单比特门：在 q₀, q₁ 上放置 H 门 (Hadamard)\n  3. 两比特门：\n     - CNOT (q₀ → q₁)：控制位 q₀，目标位 q₁\n     - CNOT (q₁ → q₂)：控制位 q₁，目标位 q₂\n  4. 参数门：在 q₂ 放置 Rz(θ) 门\n  5. 测量操作：在 q₀, q₁ 末端添加测量仪符号\n- 视觉风格：标准量子计算教科书风格，矢量SVG格式，节点对齐，线路清晰",
+            outputType: "quantum",
+            outputDesc: "三比特量子逻辑门线路图",
+            imgUrl: "Figure5.svg"
         }
     ];
 
