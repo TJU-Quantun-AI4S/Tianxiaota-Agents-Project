@@ -182,6 +182,48 @@
                   subLogo.appendChild(taLogoImg);
                   subLogo.appendChild(subLogoText);
 
+                  const haitangLink = document.createElement('a');
+                  haitangLink.href = 'http://www.baidu.com';
+                  haitangLink.target = '_blank';
+                  haitangLink.rel = 'noopener noreferrer';
+                  Object.assign(haitangLink.style, {
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 10px',
+                    borderRadius: '999px',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    textDecoration: 'none',
+                    color: '#003366',
+                    cursor: 'pointer'
+                  });
+
+                  const haitangIcon = document.createElement('div');
+                  haitangIcon.innerHTML = '<svg viewBox="0 0 64 64" width="30" height="30" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><circle cx="32" cy="32" r="9" fill="#FFD7E5"/><path d="M32 6c7 0 12 5 12 12S39 35 32 35 20 25 20 18 25 6 32 6z" fill="#FF6FA6" opacity="0.9"/><path d="M58 32c0 7-5 12-12 12S29 39 29 32s10-12 17-12 12 5 12 12z" fill="#FF5F9D" opacity="0.9"/><path d="M32 58c-7 0-12-5-12-12s5-17 12-17 12 10 12 17-5 12-12 12z" fill="#FF6FA6" opacity="0.9"/><path d="M6 32c0-7 5-12 12-12s17 5 17 12-10 12-17 12S6 39 6 32z" fill="#FF5F9D" opacity="0.9"/><circle cx="32" cy="32" r="4.5" fill="#FFB3CC"/></g></svg>';
+                  haitangIcon.style.display = 'flex';
+                  haitangIcon.style.alignItems = 'center';
+                  haitangIcon.style.justifyContent = 'center';
+                  haitangIcon.style.animation = 'tianxiaotaHaitangFloat 1.8s ease-in-out infinite';
+
+                  const haitangText = document.createElement('span');
+                  haitangText.innerText = '天津大学2026海棠季活动入口';
+                  Object.assign(haitangText.style, {
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap'
+                  });
+
+                  haitangLink.appendChild(haitangIcon);
+                  haitangLink.appendChild(haitangText);
+
+                  if (!document.getElementById('tianxiaota-haitang-style')) {
+                    const styleEl = document.createElement('style');
+                    styleEl.id = 'tianxiaota-haitang-style';
+                    styleEl.textContent = '@keyframes tianxiaotaHaitangFloat{0%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(-6deg)}100%{transform:translateY(0) rotate(0deg)}}\n@keyframes tianxiaotaPetalFall{0%{transform:translate3d(var(--x,0px),-24px,0) rotate(var(--r0,0deg));opacity:0}10%{opacity:1}100%{transform:translate3d(calc(var(--x,0px) + var(--drift, 40px)), calc(100vh + 80px), 0) rotate(calc(var(--r0,0deg) + 240deg));opacity:0}}';
+                    document.head.appendChild(styleEl);
+                  }
+
                   // Button 2
                   const btn2Link = document.createElement('a');
                   btn2Link.href = 'http://tianxiaota.vip.cpolar.cn';
@@ -205,6 +247,7 @@
                   
                   btnContainer.appendChild(subLogo);
                   btnContainer.appendChild(btn2Link);
+                  btnContainer.appendChild(haitangLink);
                   
                   // Append to the header container, right after the logo wrapper
                   // insertBefore is safer if there are other elements (like the menu)
@@ -213,6 +256,59 @@
                   } else {
                     headerContainer.appendChild(btnContainer);
                   }
+
+                  haitangLink.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (window.__tianxiaotaMetrics) window.__tianxiaotaMetrics.recordAgentUse('天津大学2026海棠季活动入口', 'https://www.tju.edu.cn/xywh/xyfg/tdhtj.htm');
+
+                    const containerId = 'tianxiaota-petal-container';
+                    let petalContainer = document.getElementById(containerId);
+                    if (!petalContainer) {
+                      petalContainer = document.createElement('div');
+                      petalContainer.id = containerId;
+                      Object.assign(petalContainer.style, {
+                        position: 'fixed',
+                        inset: '0',
+                        zIndex: '2147483646',
+                        pointerEvents: 'none',
+                        overflow: 'hidden'
+                      });
+                      document.body.appendChild(petalContainer);
+                    }
+
+                    const petalSvg = '<svg viewBox="0 0 64 64" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M32 8c6 0 12 6 12 14 0 12-8 22-12 34-4-12-12-22-12-34C20 14 26 8 32 8z" fill="#FF6FA6" opacity="0.92"/><path d="M32 14c3 0 6 3 6 7 0 8-4 14-6 22-2-8-6-14-6-22 0-4 3-7 6-7z" fill="#FFD7E5" opacity="0.75"/></svg>';
+
+                    const count = 18;
+                    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+                    for (let i = 0; i < count; i++) {
+                      const petal = document.createElement('div');
+                      petal.innerHTML = petalSvg;
+                      Object.assign(petal.style, {
+                        position: 'absolute',
+                        top: '0',
+                        left: Math.round(Math.random() * (vw - 10)) + 'px',
+                        opacity: '0',
+                        filter: 'drop-shadow(0 2px 6px rgba(255,111,166,0.25))',
+                        animation: `tianxiaotaPetalFall ${900 + Math.round(Math.random() * 900)}ms linear ${Math.round(Math.random() * 180)}ms forwards`
+                      });
+                      const x = Math.round((Math.random() - 0.5) * 40);
+                      const drift = Math.round((Math.random() - 0.5) * 120);
+                      const r0 = Math.round((Math.random() - 0.5) * 120);
+                      petal.style.setProperty('--x', x + 'px');
+                      petal.style.setProperty('--drift', drift + 'px');
+                      petal.style.setProperty('--r0', r0 + 'deg');
+                      petalContainer.appendChild(petal);
+
+                      setTimeout(function() {
+                        petal.remove();
+                      }, 2500);
+                    }
+
+                    setTimeout(function() {
+                      window.location.href = 'http://www.baidu.com';
+                    }, 900);
+                  };
               }
            }
         }, 100);
