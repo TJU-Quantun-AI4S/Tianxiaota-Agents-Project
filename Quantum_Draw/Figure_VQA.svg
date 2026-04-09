@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" width="100%" height="100%" style="background:#ffffff; font-family:sans-serif;">
+  <rect x="50" y="80" width="180" height="120" rx="10" fill="#e8f4f8" stroke="#1976d2" stroke-width="2"/>
+  <text x="140" y="110" font-size="18" font-weight="bold" fill="#1976d2" text-anchor="middle">Classical Optimizer</text>
+  <text x="140" y="140" font-size="14" fill="#555" text-anchor="middle">Minimize E(θ)</text>
+  <text x="140" y="170" font-size="14" fill="#555" text-anchor="middle">Update θ → θ*</text>
+
+  <rect x="450" y="80" width="200" height="120" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="550" y="110" font-size="18" font-weight="bold" fill="#7b1fa2" text-anchor="middle">Quantum Device</text>
+  <rect x="470" y="130" width="60" height="40" rx="4" fill="#fff" stroke="#7b1fa2" stroke-width="1.5"/>
+  <text x="500" y="155" font-size="14" fill="#7b1fa2" text-anchor="middle">U(θ)</text>
+  <rect x="560" y="130" width="60" height="40" rx="4" fill="#fff" stroke="#7b1fa2" stroke-width="1.5"/>
+  <text x="590" y="155" font-size="14" fill="#7b1fa2" text-anchor="middle">Measure</text>
+
+  <path d="M 230 110 Q 340 50 450 110" fill="none" stroke="#2e7d32" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="340" y="70" font-size="16" font-weight="bold" fill="#2e7d32" text-anchor="middle">Parameters θ</text>
+
+  <path d="M 450 170 Q 340 230 230 170" fill="none" stroke="#d84315" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+  <text x="340" y="220" font-size="16" font-weight="bold" fill="#d84315" text-anchor="middle">Expectation E(θ)</text>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2e7d32" />
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d84315" />
+    </marker>
+  </defs>
+</svg>
