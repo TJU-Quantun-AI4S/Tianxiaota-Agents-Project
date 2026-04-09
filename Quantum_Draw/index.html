@@ -743,7 +743,28 @@
 
             const data = await response.json();
             if (data.data && data.data.length > 0) {
-                return data.data[0].url;
+                let url = data.data[0].url;
+                if (url) {
+                    // Check if URL is wrapped in Markdown
+                    const match = url.match(/!\[.*?\]\((.*?)\)/);
+                    if (match) {
+                        url = match[1].trim();
+                    } else {
+                        // Check if it's wrapped in HTML img tag
+                        const htmlMatch = url.match(/src=["'](.*?)["']/);
+                        if (htmlMatch) url = htmlMatch[1].trim();
+                    }
+                    url = url.trim();
+                    // Validate if it looks like a URL or data URI
+                    if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) {
+                        return url;
+                    } else {
+                        console.error("API returned invalid URL:", url);
+                        return null;
+                    }
+                } else if (data.data[0].b64_json) {
+                    return 'data:image/png;base64,' + data.data[0].b64_json;
+                }
             }
             return null;
 
@@ -831,6 +852,11 @@
         // Check if image URL is valid (not placeholder if API was attempted)
         // For now we just show what we have
         
+        let finalSrc = imgUrl;
+        if (finalSrc && !finalSrc.startsWith('http') && !finalSrc.startsWith('data:')) {
+            finalSrc += '?t=' + new Date().getTime();
+        }
+
         const sourceLabel = isApiSuccess ? '<span style="font-size:10px; background:#e1f5fe; color:#0288d1; padding:2px 6px; border-radius:4px; margin-left:8px;">AI Generated</span>' : '';
 
         msgDiv.innerHTML = `
@@ -838,7 +864,7 @@
             <div class="msg-content" style="width: 100%;">
                 <div>✅ <strong>绘图完成：${desc}</strong>${sourceLabel}</div>
                 <div class="image-result">
-                    <img src="${imgUrl}" class="generated-img" alt="${desc}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><i class=\\'fas fa-image\\'></i> 图片加载失败或为占位符</div>'">
+                    <img src="${finalSrc}" class="generated-img" alt="${desc}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><i class=\\'fas fa-image\\'></i> 图片加载失败或为占位符</div>'">
                 </div>
                 <div style="margin-top: 8px; font-size: 13px; display: flex; gap: 10px;">
                     <button style="border:1px solid #ddd; background:#fff; padding:4px 8px; border-radius:4px; cursor:pointer;"><i class="fas fa-download"></i> 下载 PNG</button>
