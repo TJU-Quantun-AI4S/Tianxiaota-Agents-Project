@@ -431,10 +431,6 @@
                     <div>量子神经网络(QNN)结构</div>
                 </div>
                 <div class="nav-item" onclick="switchDemo(2)">
-                    <div class="nav-icon"><i class="fas fa-globe"></i></div>
-                    <div>布洛赫球(Bloch Sphere)</div>
-                </div>
-                <div class="nav-item" onclick="switchDemo(3)">
                     <div class="nav-icon"><i class="fas fa-project-diagram"></i></div>
                     <div>复杂量子逻辑线路图</div>
                 </div>
@@ -521,13 +517,6 @@
             outputType: "qnn",
             outputDesc: "量子神经网络(QNN)层次结构图",
             imgUrl: "Figure_QNN.svg"
-        },
-        {
-            input: "绘制一个布洛赫球(Bloch Sphere)，展示单量子比特初始态|0⟩在受到一个Rx(π/2)门作用后的状态向量变化轨迹。",
-            thought: "【量子态几何可视化分析】\n- 目标：绘制布洛赫球并显示量子态演化轨迹\n- 几何结构与组件：\n  1. 球体与坐标轴：绘制半透明的三维球体，标注 $X, Y, Z$ 三个正交轴\n  2. 极点标注：北极标注 $|0\\\\rangle$，南极标注 $|1\\\\rangle$\n  3. 状态向量：\n     - 初始状态向量沿 $+Z$ 轴向上\n     - 目标状态向量指向 $+Y$ 轴 (绕X轴旋转90度)\n  4. 演化轨迹：使用虚线弧线和箭头，指示从 $|0\\\\rangle$ 到赤道面的旋转路径\n- 视觉风格：三维透视感，专业物理绘图风格，关键状态高亮显示",
-            outputType: "bloch",
-            outputDesc: "单量子比特布洛赫球(Bloch Sphere)演化图",
-            imgUrl: "Figure_Bloch.svg"
         },
         {
             input: "请帮我绘制一个包含三个量子比特(q0, q1, q2)的复杂量子线路图。要求：q0和q1施加Hadamard门，然后q0和q1之间作用一个CNOT门，接着q1和q2作用一个CNOT门，最后在q2上施加一个Rz旋转门并对q0和q1进行测量。",
